@@ -1,7 +1,9 @@
 import { doc, setDoc, getDoc, collection, query, where, onSnapshot, updateDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { getFirestoreInstance } from '@/firebase/config';
 import { Task, DailyNote, User } from '@/types/task';
 import { formatDate } from '@/lib/rulesEngine';
+
+const db = getFirestoreInstance();
 
 export async function createUserProfile(user: User): Promise<void> {
   const userRef = doc(db, 'users', user.uid);

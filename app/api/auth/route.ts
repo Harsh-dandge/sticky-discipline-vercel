@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { login, loginWithGoogle, register, logout } from '@/services/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { action, email, password, displayName } = await request.json();

@@ -4,6 +4,8 @@ import { Task, DailyNote } from '@/types/task';
 import { formatDate } from '@/lib/rulesEngine';
 import { v4 as uuidv4 } from 'uuid';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get('date') || formatDate(new Date());

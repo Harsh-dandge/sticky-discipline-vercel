@@ -1,7 +1,9 @@
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signOut, onAuthStateChanged as firebaseOnAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/firebase/config';
+import { getAuthInstance } from '@/firebase/config';
 import { User } from '@/types/task';
 import { createUserProfile } from '@/services/firestore';
+
+const auth = getAuthInstance();
 
 export async function login(email: string, password: string): Promise<User> {
   const credential = await signInWithEmailAndPassword(auth, email, password);
