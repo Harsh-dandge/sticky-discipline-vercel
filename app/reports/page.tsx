@@ -9,7 +9,8 @@ import { getRulesEngineResult } from '@/lib/rulesEngine';
 
 const ReportPage: React.FC = () => {
   const { tasks } = useTaskStore();
-  const rules = getRulesEngineResult();
+  const todayStr = formatDate(new Date());
+  const rules = getRulesEngineResult(todayStr);
 
   const stats = {
     total: tasks.length,
@@ -87,8 +88,8 @@ const ReportPage: React.FC = () => {
         </div>
 
         <div className="bg-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-handwritten mb-4">Current Tasks — {formatDate(new Date())}</h2>
-          <StickyNote tasks={tasks} date={formatDate(new Date())} />
+          <h2 className="text-xl font-handwritten mb-4">Current Tasks — {todayStr}</h2>
+          <StickyNote tasks={tasks} date={todayStr} />
         </div>
 
         <div className="mt-4 text-center">

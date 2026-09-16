@@ -4,13 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { AuthProvider } from '@/components/AuthProvider';
 import Header from '@/components/Header';
 import { useTaskStore } from '@/store/useTaskStore';
-import { getRulesEngineResult } from '@/lib/rulesEngine';
+import { getRulesEngineResult, formatDate } from '@/lib/rulesEngine';
 import { registerServiceWorker } from '@/utils/swRegistration';
 import LifecycleComponent from '@/components/LifecycleComponent';
 
 function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const user = useTaskStore(state => state.user);
-  const rules = getRulesEngineResult();
+  const rules = getRulesEngineResult(formatDate(new Date()));
   const [mounted, setMounted] = useState(false);
   const [timeString, setTimeString] = useState('');
 

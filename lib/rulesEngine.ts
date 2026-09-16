@@ -22,8 +22,30 @@ export function isCompleteAllowed(): boolean {
   return true;
 }
 
-export function getRulesEngineResult(date: Date = new Date()): RulesEngineResult {
-  const mode = getCurrentMode(date);
+export function isFutureDate(dateStr: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const targetDate = new Date(dateStr);
+  targetDate.setHours(0, 0, 0, 0);
+  return targetDate > today;
+}
+
+export function isToday(dateStr: string): boolean {
+  return formatDate(new Date()) === dateStr;
+}
+
+export function getRulesEngineResult(dateStr: string): RulesEngineResult {
+  const targetDate = new Date(dateStr);
+  const targetDateOnly = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isTargetFuture = targetDateOnly > today;
+
+  // For future dates: always planning mode (full access)
+  // For today: check if before noon
+  // For past dates: view-only (execution mode, no edits)
+  const mode = isTargetFuture ? 'planning' : getCurrentMode(targetDate);
+
   return {
     mode,
     isEditable: mode === 'planning',
@@ -51,14 +73,6 @@ export function getDateFromString(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-export function isToday(dateStr: string): boolean {
-  return formatDate(new Date()) === dateStr;
-}
-
-export function isFutureDate(dateStr: string): boolean {
-  return new Date(dateStr) > new Date(new Date().toDateString());
-}
-
 export function getDaysArray(days: number): Date[] {
   const dates: Date[] = [];
   const today = new Date();
@@ -72,4 +86,32 @@ export function getDaysArray(days: number): Date[] {
 
 export function generateTaskId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+export function getTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
+  const hour = new Date().getHours();
+  if (hour < 6) return 'night';
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  if (hour < 21) return 'evening';
+  return 'night';
+}
+
+export function shouldSendReminder(): boolean {
+  const hour = new Date().getHours();
+  const minute = new Date().getMinutes();
+  return hour === 20 && minute === 0;
+}
+
+export function shouldSendDailyReport(): boolean {
+  const hour = new Date().getHours();
+  const minute = new Date().getMinutes();
+  return hour === 23 && minute === 0;
+}
+
+export function isMidnightReset(): boolean {
+  const hour = new Date().getHours();
+  const minute = new Date().getMinutes();
+  const second = new Date().getSeconds();
+  return hour === 23 && minute === 59 && second >= 55;
 }

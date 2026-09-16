@@ -13,7 +13,7 @@ interface StickyNoteProps {
 }
 
 const StickyNoteComponent: React.FC<StickyNoteProps> = ({ tasks, date, onCompleteTask, onDeleteTask }) => {
-  const rules = useRulesEngine();
+  const rules = useRulesEngine(date);
 
   return (
     <div className="sticky-note p-6 max-w-md w-full min-h-[400px] relative">

@@ -2,14 +2,14 @@ import { useMemo, useCallback } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import { getRulesEngineResult, getTaskPoints } from '@/lib/rulesEngine';
 
-export function useRulesEngine(date?: Date) {
-  const rules = useMemo(() => getRulesEngineResult(date), [date]);
+export function useRulesEngine(dateStr: string) {
+  const rules = useMemo(() => getRulesEngineResult(dateStr), [dateStr]);
   return rules;
 }
 
-export function useTaskOperations() {
+export function useTaskOperations(dateStr: string) {
   const { addTask, updateTask, deleteTask, completeTask, tasks } = useTaskStore();
-  const rules = useRulesEngine();
+  const rules = useRulesEngine(dateStr);
 
   const canAdd = rules.isAddAllowed;
   const canDelete = rules.isDeleteAllowed;
@@ -59,14 +59,15 @@ export function useTaskOperations() {
   };
 }
 
-export function useCarryForward() {
+export function useCarryForward(dateStr: string) {
   const { tasks, addTask } = useTaskStore();
+  const rules = useRulesEngine(dateStr);
 
   const getIncompleteTasks = useCallback(() => {
     return tasks.filter(t => t.status === 'pending');
   }, [tasks]);
 
-  const carryForwardTasks = useCallback(async (previousDate: string) => {
+  const carryForwardTasks = useCallback(async () => {
     const incomplete = getIncompleteTasks();
     const carriedTasks = incomplete.map(t => ({
       ...t,
@@ -86,6 +87,7 @@ export function useCarryForward() {
   return {
     incompleteTasks: getIncompleteTasks(),
     carryForwardTasks,
+    canCarryForward: rules.isAddAllowed && getIncompleteTasks().length > 0,
   };
 }
 

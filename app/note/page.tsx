@@ -3,14 +3,13 @@
 import React from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import StickyNote from '@/components/StickyNote';
-import { formatDate } from '@/lib/rulesEngine';
 import { useTaskOperations } from '@/hooks/useTaskOperations';
 import { useCarryForward } from '@/hooks/useCarryForward';
 
 const NotePage: React.FC = () => {
   const { user, currentDate, setCurrentDate, tasks, initializeNote, addTask, completeTask, deleteTask } = useTaskStore();
-  const { canAdd, mode } = useTaskOperations();
-  const { carryForward } = useCarryForward();
+  const { canAdd, mode } = useTaskOperations(currentDate);
+  const { carryForward, canCarryForward } = useCarryForward(currentDate);
   const [newTaskText, setNewTaskText] = React.useState('');
   const [newTaskType, setNewTaskType] = React.useState<'pre-planned' | 'same-day' | 'carried'>('same-day');
   const [showAddForm, setShowAddForm] = React.useState(false);
@@ -37,8 +36,7 @@ const NotePage: React.FC = () => {
   };
 
   const handleCarryForward = async () => {
-    const previousDate = formatDate(new Date(Date.now() - 86400000));
-    await carryForward(previousDate);
+    await carryForward();
   };
 
   if (!user) {
@@ -116,7 +114,7 @@ const NotePage: React.FC = () => {
           <StickyNote tasks={tasks} date={currentDate} onCompleteTask={completeTask} onDeleteTask={deleteTask} />
         </div>
 
-        {canAdd && tasks.filter(t => t.status === 'pending').length > 0 && (
+        {canCarryForward && (
           <div className="text-center">
             <button
               onClick={handleCarryForward}
