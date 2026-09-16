@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Caveat:wght@400;700&display=swap');
+
+:root {
+  --background: #1a1a2e;
+  --foreground: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f23;
+    --foreground: #e0e0e0;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Patrick Hand', cursive;
+}
+
+.sticky-note {
+  background: linear-gradient(135deg, #FFD700 0%, #FFE44D 50%, #FFD700 100%);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.3);
+  border-radius: 2px;
+  transform: rotate(-1.5deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sticky-note:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .strike-through {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+}

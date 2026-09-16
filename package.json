@@ -1,0 +1,49 @@
+{
+  "name": "sticky-discipline",
+  "version": "1.0.0",
+  "description": "Build discipline one sticky note at a time",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.6.0",
+    "date-fns": "^4.4.0",
+    "firebase": "^12.19.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.88.0",
+    "recharts": "^3.10.1",
+    "uuid": "^14.0.2",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^5.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "jsdom": "^30.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  },
+  "keywords": [
+    "productivity",
+    "task-manager",
+    "sticky-notes"
+  ],
+  "author": "",
+  "license": "MIT"
+}
