@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDailyNote, saveDailyNote, completeTaskInDay, updateTaskInDay, deleteTaskFromDay } from '@/services/firestore';
+import { getDailyNote, saveDailyNote } from '@/services/firestore';
 import { Task, DailyNote } from '@/types/task';
 import { formatDate } from '@/lib/rulesEngine';
 import { v4 as uuidv4 } from 'uuid';
@@ -40,7 +40,17 @@ export async function POST(request: NextRequest) {
       await saveDailyNote(note);
       return NextResponse.json({ note });
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: unknown }).message
+          : undefined;
+
+    return NextResponse.json(
+      { error: typeof errorMessage === 'string' ? errorMessage : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }

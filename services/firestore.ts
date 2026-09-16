@@ -1,22 +1,21 @@
-import { doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, deleteDoc, updateDoc, serverTimestamp, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, where, onSnapshot, updateDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { Task, DailyNote, User } from '@/types/task';
-import { formatDate, generateTaskId } from '@/lib/rulesEngine';
+import { formatDate } from '@/lib/rulesEngine';
 
 export async function createUserProfile(user: User): Promise<void> {
   const userRef = doc(db, 'users', user.uid);
 
-  // Firestore does NOT allow `undefined` values. Only include photoURL if it exists.
-  const profile: Record<string, any> = {
+  // Firestore does not allow `undefined` values, so omit photoURL when absent.
+  const profile = {
     uid: user.uid,
     email: user.email,
     displayName: user.displayName,
     createdAt: serverTimestamp(),
+    ...(typeof user.photoURL === 'string' && user.photoURL.length > 0
+      ? { photoURL: user.photoURL }
+      : {}),
   };
-
-  if (typeof user.photoURL === 'string' && user.photoURL.length > 0) {
-    profile.photoURL = user.photoURL;
-  }
 
   await setDoc(userRef, profile, { merge: true });
 }

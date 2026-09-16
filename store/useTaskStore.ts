@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import { Task, DailyNote, User } from '@/types/task';
 import { formatDate } from '@/lib/rulesEngine';
-import { onDailyNoteSnapshot, saveDailyNote, createDailyNote } from '@/services/firestore';
+import { onDailyNoteSnapshot, saveDailyNote } from '@/services/firestore';
 import { onAuthStateChanged } from '@/services/auth';
-import { v4 as uuidv4 } from 'uuid';
 
 function makeDailyNoteId(userId: string, date: string): string {
   return `${userId}_${date}`;
@@ -14,6 +13,7 @@ interface TaskStore {
   tasks: Task[];
   currentDate: string;
   isLoading: boolean;
+  noteCreatedAt: number | null;
   setUser: (user: User | null) => void;
   setCurrentDate: (date: string) => void;
   addTask: (task: Task) => Promise<void>;
@@ -28,6 +28,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   currentDate: formatDate(new Date()),
   isLoading: false,
+  noteCreatedAt: null,
 
   setUser: (user) => set({ user }),
   setCurrentDate: (date) => {
@@ -39,7 +40,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   addTask: async (task) => {
-    const { currentDate, user } = get();
+    const { currentDate, user, noteCreatedAt } = get();
     if (!user) return;
     const currentTasks = [...get().tasks, task];
     set({ tasks: currentTasks });
@@ -48,13 +49,13 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       date: currentDate,
       userId: user.uid,
       tasks: currentTasks,
-      createdAt: Date.now(),
+      createdAt: noteCreatedAt ?? Date.now(),
       updatedAt: Date.now(),
     });
   },
 
   updateTask: async (taskId, updates) => {
-    const { currentDate, user } = get();
+    const { currentDate, user, noteCreatedAt } = get();
     if (!user) return;
     const currentTasks = get().tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
     set({ tasks: currentTasks });
@@ -63,13 +64,13 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       date: currentDate,
       userId: user.uid,
       tasks: currentTasks,
-      createdAt: Date.now(),
+      createdAt: noteCreatedAt ?? Date.now(),
       updatedAt: Date.now(),
     });
   },
 
   deleteTask: async (taskId) => {
-    const { currentDate, user } = get();
+    const { currentDate, user, noteCreatedAt } = get();
     if (!user) return;
     const currentTasks = get().tasks.filter(t => t.id !== taskId);
     set({ tasks: currentTasks });
@@ -78,23 +79,24 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       date: currentDate,
       userId: user.uid,
       tasks: currentTasks,
-      createdAt: Date.now(),
+      createdAt: noteCreatedAt ?? Date.now(),
       updatedAt: Date.now(),
     });
   },
 
   completeTask: async (taskId) => {
-    const { currentDate, user } = get();
+    const { currentDate, user, noteCreatedAt } = get();
     if (!user) return;
     const now = Date.now();
     const currentTasks = get().tasks.map(t => {
       if (t.id === taskId) {
         const isCurrentlyCompleted = t.status === 'completed';
-        return {
-          ...t,
-          status: (isCurrentlyCompleted ? 'pending' : 'completed') as 'pending' | 'completed',
-          completedAt: isCurrentlyCompleted ? undefined : now,
-        };
+        if (isCurrentlyCompleted) {
+          // Un-completing: drop completedAt entirely — Firestore rejects `undefined` values.
+          const { completedAt, ...rest } = t;
+          return { ...rest, status: 'pending' as const };
+        }
+        return { ...t, status: 'completed' as const, completedAt: now };
       }
       return t;
     });
@@ -104,7 +106,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       date: currentDate,
       userId: user.uid,
       tasks: currentTasks,
-      createdAt: Date.now(),
+      createdAt: noteCreatedAt ?? Date.now(),
       updatedAt: Date.now(),
     });
   },
@@ -112,9 +114,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   initializeNote: (userId, date) => {
     const unsubscribe = onDailyNoteSnapshot(userId, date, (note) => {
       if (note) {
-        set({ tasks: note.tasks || [] });
+        set({
+          tasks: note.tasks || [],
+          noteCreatedAt: typeof note.createdAt === 'number' ? note.createdAt : null,
+        });
       } else {
-        set({ tasks: [] });
+        set({ tasks: [], noteCreatedAt: null });
       }
     });
     return unsubscribe;

@@ -25,7 +25,17 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  } catch (err: unknown) {
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: unknown }).message
+          : undefined;
+
+    return NextResponse.json(
+      { error: typeof errorMessage === 'string' ? errorMessage : 'Unknown error' },
+      { status: 401 }
+    );
   }
 }

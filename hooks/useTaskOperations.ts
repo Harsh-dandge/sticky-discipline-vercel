@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
-import { getRulesEngineResult, getCurrentMode, formatDate } from '@/lib/rulesEngine';
-import { getTaskPoints } from '@/lib/rulesEngine';
+import { getRulesEngineResult, getTaskPoints } from '@/lib/rulesEngine';
 
 export function useRulesEngine(date?: Date) {
   const rules = useMemo(() => getRulesEngineResult(date), [date]);

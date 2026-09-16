@@ -1,6 +1,5 @@
-import { onDailyNoteSnapshot, getDailyNote, saveDailyNote } from '@/services/firestore';
+import { getDailyNote } from '@/services/firestore';
 import { formatDate } from '@/lib/rulesEngine';
-import { useTaskStore } from '@/store/useTaskStore';
 
 export class LifecycleScheduler {
   private intervals: NodeJS.Timeout[] = [];

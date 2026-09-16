@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
-import { formatDate, getDateFromString, getDaysArray } from '@/lib/rulesEngine';
-import { getTaskStats } from '@/services/firestore';
-import { Task } from '@/types/task';
+import { formatDate } from '@/lib/rulesEngine';
 
 interface ReportData {
   period: string;
