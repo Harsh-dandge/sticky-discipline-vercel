@@ -6,9 +6,10 @@ interface TaskItemProps {
   onComplete: (id: string) => void;
   onDelete?: (id: string) => void;
   showDelete?: boolean;
+  canComplete?: boolean;
 }
 
-const TaskItem: React.FC<TaskItemProps> = memo(({ task, onComplete, onDelete, showDelete = false }) => {
+const TaskItem: React.FC<TaskItemProps> = memo(({ task, onComplete, onDelete, showDelete = false, canComplete = true }) => {
   const isCompleted = task.status === 'completed';
 
   const typeStyles = {
@@ -26,12 +27,13 @@ const TaskItem: React.FC<TaskItemProps> = memo(({ task, onComplete, onDelete, sh
       <button
         type="button"
         onClick={() => onComplete(task.id)}
+        disabled={!canComplete}
         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
           isCompleted
             ? 'bg-emerald-600 border-emerald-700 text-white'
             : 'border-gray-700 bg-white/70 hover:bg-white hover:border-gray-900'
-        }`}
-        title={isCompleted ? 'Mark pending' : 'Mark completed'}
+        } ${canComplete ? '' : 'opacity-40 cursor-not-allowed'}`}
+        title={isCompleted ? 'Mark pending' : (canComplete ? 'Mark completed' : 'Completed tasks are view-only')}
       >
         {isCompleted && (
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

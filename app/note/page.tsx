@@ -3,16 +3,21 @@
 import React from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import StickyNote from '@/components/StickyNote';
+import RecurringTaskForm from '@/components/RecurringTaskForm';
 import { useTaskOperations } from '@/hooks/useTaskOperations';
-import { useCarryForward } from '@/hooks/useCarryForward';
 
 const NotePage: React.FC = () => {
   const { user, currentDate, setCurrentDate, tasks, initializeNote, addTask, completeTask, deleteTask } = useTaskStore();
   const { canAdd, mode } = useTaskOperations(currentDate);
-  const { carryForward, canCarryForward } = useCarryForward(currentDate);
+
+  // Date picker bounds: today .. today + 3 months
+  const now = new Date();
+  const minDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const maxDate = `${new Date(now.getFullYear(), now.getMonth() + 3, now.getDate()).getFullYear()}-${String(new Date(now.getFullYear(), now.getMonth() + 3, now.getDate()).getMonth() + 1).padStart(2, '0')}-${String(new Date(now.getFullYear(), now.getMonth() + 3, now.getDate()).getDate()).padStart(2, '0')}`;
   const [newTaskText, setNewTaskText] = React.useState('');
   const [newTaskType, setNewTaskType] = React.useState<'pre-planned' | 'same-day' | 'carried'>('same-day');
   const [showAddForm, setShowAddForm] = React.useState(false);
+  const [showRecurringForm, setShowRecurringForm] = React.useState(false);
 
   React.useEffect(() => {
     if (!user) return;
@@ -35,10 +40,6 @@ const NotePage: React.FC = () => {
     setShowAddForm(false);
   };
 
-  const handleCarryForward = async () => {
-    await carryForward();
-  };
-
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -56,6 +57,8 @@ const NotePage: React.FC = () => {
             <input
               type="date"
               value={currentDate}
+              min={minDate}
+              max={maxDate}
               onChange={(e) => setCurrentDate(e.target.value)}
               className="bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-600"
             />
@@ -68,8 +71,19 @@ const NotePage: React.FC = () => {
         </div>
 
         {canAdd && (
-          <div className="mb-4">
-            {showAddForm ? (
+          <div className="mb-4 space-y-3">
+            {!showAddForm && !showRecurringForm ? (
+              <div className="flex gap-3">
+                <button onClick={() => setShowAddForm(true)} className="px-4 py-2 bg-sticky-yellow text-gray-900 rounded-lg font-handwritten hover:bg-sticky-yellow-light transition-colors">
+                  + Add Task
+                </button>
+                <button onClick={() => setShowRecurringForm(true)} className="px-4 py-2 bg-purple-500 text-white rounded-lg font-handwritten hover:bg-purple-400 transition-colors">
+                  🔄 Recurring Task
+                </button>
+              </div>
+            ) : null}
+
+            {showAddForm && (
               <div className="bg-gray-800 p-4 rounded-lg space-y-3">
                 <input
                   type="text"
@@ -91,13 +105,19 @@ const NotePage: React.FC = () => {
                     <option value="carried">Carried</option>
                   </select>
                   <button onClick={handleAdd} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 font-handwritten">Add</button>
-                  <button onClick={() => setShowAddForm(false)} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 font-handwritten">Cancel</button>
+                  <button onClick={() => { setShowAddForm(false); setShowRecurringForm(false); }} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 font-handwritten">Cancel</button>
                 </div>
               </div>
-            ) : (
-              <button onClick={() => setShowAddForm(true)} className="px-4 py-2 bg-sticky-yellow text-gray-900 rounded-lg font-handwritten hover:bg-sticky-yellow-light transition-colors">
-                + Add Task
-              </button>
+            )}
+
+            {showRecurringForm && (
+              <RecurringTaskForm
+                userId={user.uid}
+                onSubmitSuccess={() => {
+                  setShowRecurringForm(false);
+                  setShowAddForm(false);
+                }}
+              />
             )}
           </div>
         )}
@@ -113,17 +133,6 @@ const NotePage: React.FC = () => {
         <div className="flex justify-center mb-4">
           <StickyNote tasks={tasks} date={currentDate} onCompleteTask={completeTask} onDeleteTask={deleteTask} />
         </div>
-
-        {canCarryForward && (
-          <div className="text-center">
-            <button
-              onClick={handleCarryForward}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg font-handwritten hover:bg-orange-400 transition-colors"
-            >
-              🔄 Carry Forward Incomplete Tasks
-            </button>
-          </div>
-        )}
 
         <div className="mt-4 text-center">
           <div className="flex gap-4 justify-center text-sm font-handwritten2">

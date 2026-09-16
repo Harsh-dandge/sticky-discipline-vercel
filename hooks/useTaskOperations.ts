@@ -59,38 +59,6 @@ export function useTaskOperations(dateStr: string) {
   };
 }
 
-export function useCarryForward(dateStr: string) {
-  const { tasks, addTask } = useTaskStore();
-  const rules = useRulesEngine(dateStr);
-
-  const getIncompleteTasks = useCallback(() => {
-    return tasks.filter(t => t.status === 'pending');
-  }, [tasks]);
-
-  const carryForwardTasks = useCallback(async () => {
-    const incomplete = getIncompleteTasks();
-    const carriedTasks = incomplete.map(t => ({
-      ...t,
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: 'carried' as const,
-      status: 'pending' as const,
-      completedAt: undefined,
-      createdAt: Date.now(),
-      points: 1,
-    }));
-    for (const task of carriedTasks) {
-      await addTask(task);
-    }
-    return carriedTasks;
-  }, [getIncompleteTasks, addTask]);
-
-  return {
-    incompleteTasks: getIncompleteTasks(),
-    carryForwardTasks,
-    canCarryForward: rules.isAddAllowed && getIncompleteTasks().length > 0,
-  };
-}
-
 export function useTaskStats() {
   const tasks = useTaskStore(state => state.tasks);
 

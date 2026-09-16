@@ -31,6 +31,7 @@ const StickyNoteComponent: React.FC<StickyNoteProps> = ({ tasks, date, onComplet
             onComplete={onCompleteTask || (() => {})}
             onDelete={onDeleteTask}
             showDelete={rules.isDeleteAllowed}
+            canComplete={rules.isCompleteAllowed}
           />
         ))}
       </div>

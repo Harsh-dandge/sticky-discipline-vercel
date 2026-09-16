@@ -34,24 +34,74 @@ export function isToday(dateStr: string): boolean {
   return formatDate(new Date()) === dateStr;
 }
 
+/**
+ * Parse a 'YYYY-MM-DD' string as local midnight (avoids UTC timezone trap).
+ */
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/** Max number of months ahead a user can plan tasks. */
+const MAX_FUTURE_MONTHS = 3;
+
 export function getRulesEngineResult(dateStr: string): RulesEngineResult {
-  const targetDate = new Date(dateStr);
-  const targetDateOnly = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const isTargetFuture = targetDateOnly > today;
+  // Parse target date as local midnight
+  const targetDateOnly = parseLocalDate(dateStr);
 
-  // For future dates: always planning mode (full access)
-  // For today: check if before noon
-  // For past dates: view-only (execution mode, no edits)
-  const mode = isTargetFuture ? 'planning' : getCurrentMode(targetDate);
+  // Today at local midnight
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  const isPast = targetDateOnly < todayMidnight;
+  const isToday = targetDateOnly.getTime() === todayMidnight.getTime();
+  const isFuture = targetDateOnly > todayMidnight;
+
+  // Compute the max-plannable date (today + 3 months)
+  const maxPlanDate = new Date(now.getFullYear(), now.getMonth() + MAX_FUTURE_MONTHS, now.getDate());
+  const isWithinPlanningWindow = isFuture && targetDateOnly <= maxPlanDate;
+
+  if (isPast) {
+    // PAST: view-only, no editing, no completing, no deleting
+    return {
+      mode: 'execution',
+      isEditable: false,
+      isAddAllowed: false,
+      isDeleteAllowed: false,
+      isCompleteAllowed: false,
+    };
+  }
+
+  if (isToday) {
+    // TODAY: planning mode before noon, execution mode after noon
+    const mode = now.getHours() < NOON_THRESHOLD ? 'planning' : 'execution';
+    return {
+      mode,
+      isEditable: mode === 'planning',
+      isAddAllowed: mode === 'planning',
+      isDeleteAllowed: mode === 'planning',
+      isCompleteAllowed: true,
+    };
+  }
+
+  if (isWithinPlanningWindow) {
+    // FUTURE within 3 months: full planning access
+    return {
+      mode: 'planning',
+      isEditable: true,
+      isAddAllowed: true,
+      isDeleteAllowed: true,
+      isCompleteAllowed: false,
+    };
+  }
+
+  // FUTURE beyond 3 months: view-only
   return {
-    mode,
-    isEditable: mode === 'planning',
-    isAddAllowed: mode === 'planning',
-    isDeleteAllowed: mode === 'planning',
-    isCompleteAllowed: true,
+    mode: 'execution',
+    isEditable: false,
+    isAddAllowed: false,
+    isDeleteAllowed: false,
+    isCompleteAllowed: false,
   };
 }
 
