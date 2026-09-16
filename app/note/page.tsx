@@ -19,7 +19,7 @@ const NotePage: React.FC = () => {
     if (!user) return;
     const unsub = initializeNote(user.uid, currentDate);
     return () => unsub();
-  }, [user, currentDate]);
+  }, [user, currentDate, initializeNote]);
 
   const handleAdd = async () => {
     if (!newTaskText.trim() || !canAdd) return;
@@ -85,7 +85,7 @@ const NotePage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <select
                     value={newTaskType}
-                    onChange={(e) => setNewTaskType(e.target.value as any)}
+                    onChange={(e) => setNewTaskType(e.target.value as 'pre-planned' | 'same-day' | 'carried')}
                     className="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600"
                   >
                     <option value="pre-planned">Pre-planned</option>

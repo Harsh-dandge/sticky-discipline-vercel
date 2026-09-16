@@ -5,12 +5,10 @@ import StickyNote from '@/components/StickyNote';
 import { useTaskStore } from '@/store/useTaskStore';
 import { formatDate } from '@/lib/rulesEngine';
 
-import { useTaskOperations } from '@/hooks/useTaskOperations';
 import { getRulesEngineResult } from '@/lib/rulesEngine';
 
 const ReportPage: React.FC = () => {
   const { tasks } = useTaskStore();
-  const { mode } = useTaskOperations();
   const rules = getRulesEngineResult();
 
   const stats = {

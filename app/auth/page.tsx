@@ -23,8 +23,8 @@ const LoginPage: React.FC = () => {
       const user = await login(email, password);
       setUser(user);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -37,8 +37,8 @@ const LoginPage: React.FC = () => {
       const user = await loginWithGoogle();
       setUser(user);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Google login failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -52,8 +52,8 @@ const LoginPage: React.FC = () => {
       const user = await register(email, password, name);
       setUser(user);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
